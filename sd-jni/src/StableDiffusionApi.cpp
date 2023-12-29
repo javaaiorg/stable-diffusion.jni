@@ -6,17 +6,56 @@
 
 JNIEXPORT jlong JNICALL Java_org_javaai_stablediffusion_api_StableDiffusion_newInstance(
     JNIEnv* env,
-    jobject, 
+    jobject,
     jint n_threads,
     jboolean vae_decode_only,
     jstring taesd_path,
+    jstring esrgan_path,
     jboolean free_params_immediately,
+    jboolean vae_tiling,
     jstring lora_model_dir,
     jint rng_type) {
 	
-	StableDiffusion* psd = new StableDiffusion();
 
 
+    const char* native_taesd_path = "";
+    const char* native_esrgan_path = "";
+    const char* native_lora_model_dir = "";
+
+    if (taesd_path != nullptr) {
+        native_taesd_path = env->GetStringUTFChars(taesd_path, nullptr);
+    }
+    if (esrgan_path != nullptr) {
+        native_esrgan_path = env->GetStringUTFChars(esrgan_path, nullptr);
+    }
+    if (lora_model_dir != nullptr) {
+        native_lora_model_dir = env->GetStringUTFChars(lora_model_dir, nullptr);
+    }
+
+
+
+
+	StableDiffusion* psd = new StableDiffusion(
+        (int) n_threads, 
+        (bool)vae_decode_only, 
+        native_taesd_path, 
+        native_esrgan_path,
+        (bool)free_params_immediately, 
+        (bool)vae_tiling, 
+        native_lora_model_dir,
+        (RNGType)rng_type);
+
+
+    if (taesd_path != nullptr) {
+        env->ReleaseStringUTFChars(taesd_path, native_taesd_path);
+    }
+    if (esrgan_path != nullptr) {
+        env->ReleaseStringUTFChars(esrgan_path, native_esrgan_path);
+    }
+    if (lora_model_dir != nullptr) {
+        env->ReleaseStringUTFChars(lora_model_dir, native_lora_model_dir);
+    }
+    
 
 	return (jlong)psd;
 

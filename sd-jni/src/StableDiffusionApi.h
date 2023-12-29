@@ -22,7 +22,9 @@ JNIEXPORT jlong JNICALL Java_org_javaai_stablediffusion_api_StableDiffusion_newI
     jint n_threads,
     jboolean vae_decode_only,
     jstring taesd_path,
+    jstring esrgan_path, 
     jboolean free_params_immediately,
+    jboolean vae_tiling, 
     jstring lora_model_dir,
     jint rng_type);
 
