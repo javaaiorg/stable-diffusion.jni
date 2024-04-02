@@ -2,7 +2,19 @@
 
 
 
+jint JNI_OnLoad(JavaVM* vm, void* reserved)
+{
+    g_jvm = vm;
+    return SD_JNI_VERSION;
+}
 
+
+
+void JNI_OnUnload(JavaVM* vm, void* reserved)
+{
+    g_jvm = NULL;
+    return ;
+}
 
 JNIEXPORT jlong JNICALL Java_org_javaai_stablediffusion_api_StableDiffusion_newInstance(
     JNIEnv* env,
@@ -251,6 +263,49 @@ JNIEXPORT void JNICALL Java_org_javaai_stablediffusion_api_Util_setSDLogLevel(
     jint logLevel) {
     set_sd_log_level((SDLogLevel)logLevel);
 }
+
+
+JNIEXPORT void JNICALL Java_org_javaai_stablediffusion_api_Util_enableSDLogCallback(
+    JNIEnv* env,
+    jobject) {
+    set_sd_log_callback(LOG_CALLBACK_TO_JNI);
+}
+
+JNIEXPORT void JNICALL Java_org_javaai_stablediffusion_api_Util_disableSDLogCallback(
+    JNIEnv* env,
+    jobject) {
+    set_sd_log_callback(NULL);
+}
+
+
+void LOG_CALLBACK_TO_JNI(SDLogLevel level, const char* file, int line, const char* format, va_list args) {
+    JNIEnv* env = NULL;
+    g_jvm->GetEnv((void **)&env, SD_JNI_VERSION);
+    if (env == NULL) {
+        return;
+    }
+    jclass cUtil = (env)->FindClass("org/javaai/stablediffusion/api/Util");
+    jmethodID mid = env->GetStaticMethodID(cUtil, "onSDLogCallback", "(ILjava/lang/String;ILjava/lang/String;)V");
+
+
+    if (mid == NULL) {
+        return;
+    }
+
+    size_t msgSize = strlen(format) * 2 + 4096;
+    char* logMsg = new char[msgSize];
+    vsnprintf(logMsg, msgSize, format, args);
+
+    jstring jLogMsg = env->NewStringUTF(logMsg);
+    jstring jfile = env->NewStringUTF(file);
+
+    env->CallStaticVoidMethod(cUtil, mid, (jint)level, jfile, line, jLogMsg);
+
+
+    delete[] logMsg;
+
+}
+
 
 
 

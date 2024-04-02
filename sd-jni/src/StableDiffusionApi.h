@@ -8,12 +8,18 @@
 #include "stable-diffusion.h"
 #include "jni.h"
 
+
+static JavaVM* g_jvm = NULL;
+#define SD_JNI_VERSION JNI_VERSION_1_8
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
 
     
+
 
 
 JNIEXPORT jlong JNICALL Java_org_javaai_stablediffusion_api_StableDiffusion_newInstance(
@@ -81,7 +87,14 @@ JNIEXPORT void JNICALL Java_org_javaai_stablediffusion_api_Util_setSDLogLevel(
     jobject,
     jint logLevel);
 
+JNIEXPORT void JNICALL Java_org_javaai_stablediffusion_api_Util_enableSDLogCallback(
+    JNIEnv* env,
+    jobject);
 
+JNIEXPORT void JNICALL Java_org_javaai_stablediffusion_api_Util_disableSDLogCallback(
+    JNIEnv* env,
+    jobject);
+void LOG_CALLBACK_TO_JNI(SDLogLevel level, const char* file, int line, const char* format, va_list args);
 
 
 
