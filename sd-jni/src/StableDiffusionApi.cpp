@@ -292,22 +292,23 @@ void LOG_CALLBACK_TO_JNI(SDLogLevel level, const char* file, int line, const cha
         return;
     }
 
-    char* logMsg = "";
+    char* logMsg = NULL;
     if (format != NULL) {
         size_t msgSize = strlen(format) * 2 + 4096;
-        char* logMsg = new char[msgSize];
+        logMsg = new char[msgSize];
         vsnprintf(logMsg, msgSize, format, args);
-        return;
     }
 
 
-    jstring jLogMsg = env->NewStringUTF(logMsg);
+    jstring jLogMsg = env->NewStringUTF(logMsg == NULL ? "" : logMsg);
     jstring jfile = env->NewStringUTF(file);
 
     env->CallStaticVoidMethod(cUtil, mid, (jint)level, jfile, line, jLogMsg);
 
 
-    delete[] logMsg;
+    if (logMsg != NULL) {
+        delete[] logMsg;
+    }
 
 }
 
