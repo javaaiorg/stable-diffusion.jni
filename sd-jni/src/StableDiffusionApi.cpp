@@ -292,9 +292,14 @@ void LOG_CALLBACK_TO_JNI(SDLogLevel level, const char* file, int line, const cha
         return;
     }
 
-    size_t msgSize = strlen(format) * 2 + 4096;
-    char* logMsg = new char[msgSize];
-    vsnprintf(logMsg, msgSize, format, args);
+    char* logMsg = "";
+    if (format != NULL) {
+        size_t msgSize = strlen(format) * 2 + 4096;
+        char* logMsg = new char[msgSize];
+        vsnprintf(logMsg, msgSize, format, args);
+        return;
+    }
+
 
     jstring jLogMsg = env->NewStringUTF(logMsg);
     jstring jfile = env->NewStringUTF(file);
